@@ -11,11 +11,15 @@ import sys
 import time
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import os
+
+# Add parent directory to Python path so trainers can find pipeline_shared
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + '/..')
 
 TRAINERS = [
-    ('train_svm_model.py', 'SVM'),
-    ('train_randomforest_model.py', 'Random Forest'),
-    ('train_gradientboosting_model.py', 'Gradient Boosting')
+    ('models/train_svm_model.py', 'SVM'),
+    ('models/train_randomforest_model.py', 'Random Forest'),
+    ('models/train_gradientboosting_model.py', 'Gradient Boosting')
 ]
 
 def run_trainer_sequential():
@@ -35,9 +39,15 @@ def run_trainer_sequential():
         
         model_start = time.time()
         try:
+            # Set PYTHONPATH to include parent directory
+            env = os.environ.copy()
+            parent_dir = os.path.dirname(os.path.abspath(__file__))
+            env['PYTHONPATH'] = parent_dir + os.pathsep + env.get('PYTHONPATH', '')
+            
             result = subprocess.run(
                 [sys.executable, trainer_file],
-                cwd='.',
+                cwd='..',
+                env=env,
                 check=True,
                 capture_output=False
             )
@@ -90,9 +100,15 @@ def run_trainer_parallel():
         print(f"\n[TIME] Starting {model_name} training...")
         model_start = time.time()
         try:
+            # Set PYTHONPATH to include parent directory
+            env = os.environ.copy()
+            parent_dir = os.path.dirname(os.path.abspath(__file__))
+            env['PYTHONPATH'] = parent_dir + os.pathsep + env.get('PYTHONPATH', '')
+            
             result = subprocess.run(
                 [sys.executable, trainer_file],
-                cwd='.',
+                cwd='..',
+                env=env,
                 check=True,
                 capture_output=False
             )
