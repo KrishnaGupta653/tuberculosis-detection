@@ -9,12 +9,16 @@ Saves: svm_model_TIMESTAMP.pkl with metrics
 import numpy as np
 import pickle
 import os
+import sys
 from datetime import datetime
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 from sklearn.metrics import (classification_report, accuracy_score, confusion_matrix,
                             precision_score, recall_score, f1_score)
 from tqdm import tqdm
+
+# Add parent directory to path so pipeline_shared can be imported
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + '/..')
 
 from pipeline_shared import (
     Config, load_image_paths, extract_features_parallel, 
@@ -87,7 +91,6 @@ def train_svm_model():
         class_weight=class_weights_dict,
         probability=True,
         random_state=Config.RANDOM_SEED,
-        n_jobs=Config.N_JOBS,
         verbose=1
     )
     

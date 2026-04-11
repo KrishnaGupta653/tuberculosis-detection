@@ -48,8 +48,9 @@ def run_trainer_sequential():
                 [sys.executable, trainer_file],
                 cwd='..',
                 env=env,
-                check=True,
-                capture_output=False
+                capture_output=True,
+                text=True,
+                check=True
             )
             model_time = time.time() - model_start
             results[model_name] = {
@@ -57,6 +58,10 @@ def run_trainer_sequential():
                 'time_seconds': model_time
             }
             print(f"\n[OK] {model_name} completed in {model_time/60:.1f} minutes")
+            # Print captured output with trainer prefix
+            for line in result.stdout.split('\n'):
+                if line.strip():
+                    print(f"[{model_name}] {line}")
         except subprocess.CalledProcessError as e:
             model_time = time.time() - model_start
             results[model_name] = {
@@ -65,6 +70,10 @@ def run_trainer_sequential():
                 'error': str(e)
             }
             print(f"\n[FAIL] {model_name} failed after {model_time/60:.1f} minutes")
+            # Print error output with trainer prefix
+            for line in e.stderr.split('\n'):
+                if line.strip():
+                    print(f"[{model_name}] ERROR: {line}")
     
     total_time = time.time() - start_time
     
@@ -109,15 +118,24 @@ def run_trainer_parallel():
                 [sys.executable, trainer_file],
                 cwd='..',
                 env=env,
-                check=True,
-                capture_output=False
+                capture_output=True,
+                text=True,
+                check=True
             )
             model_time = time.time() - model_start
             print(f"\n[OK] {model_name} completed in {model_time/60:.1f} minutes")
+            # Print captured output with trainer prefix
+            for line in result.stdout.split('\n'):
+                if line.strip():
+                    print(f"[{model_name}] {line}")
             return (model_name, 'SUCCESS [OK]', model_time, None)
         except subprocess.CalledProcessError as e:
             model_time = time.time() - model_start
             print(f"\n[FAIL] {model_name} failed after {model_time/60:.1f} minutes")
+            # Print error output with trainer prefix
+            for line in e.stderr.split('\n'):
+                if line.strip():
+                    print(f"[{model_name}] ERROR: {line}")
             return (model_name, 'FAILED [FAIL]', model_time, str(e))
     
     # Launch all trainers concurrently

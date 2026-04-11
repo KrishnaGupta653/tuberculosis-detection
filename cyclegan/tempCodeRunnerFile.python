@@ -1,0 +1,29 @@
+import requests
+import base64
+import os
+from PIL import Image
+from io import BytesIO
+
+image_path = "C:\\Users\\kg060\\Desktop\\projects\\tuberculosis\\cyclegan\\TB1.jpg"
+
+with open(image_path, 'rb') as f:
+    response = requests.post(
+        'https://ee34-122-161-53-195.ngrok-free.app/api/generate?format=json',
+        files={'image': f},
+        data={'checkpoint': 'epoch_0025', 'output': 'results_0000001'}
+    )
+
+result = response.json()
+
+# Save generated image locally
+generated_base64 = result['generated_image']
+image_data = base64.b64decode(generated_base64)
+img = Image.open(BytesIO(image_data))
+
+# Get just the filename
+filename = os.path.basename(image_path)
+output_name = f"generated_{filename}"
+img.save(output_name)
+
+print(f"✅ Saved to {output_name}")
+print(f"📊 Metrics: {result['metrics']}")
